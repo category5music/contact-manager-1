@@ -1,0 +1,145 @@
+.calendar {
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.monthYear {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.navBtn {
+  background: none;
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.navBtn:hover {
+  background-color: var(--bg-secondary);
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  margin-bottom: 1px;
+}
+
+.weekday {
+  padding: 0.5rem;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: var(--border-color);
+}
+
+.day {
+  min-height: 100px;
+  background-color: var(--bg-primary);
+  padding: 0.5rem;
+  vertical-align: top;
+}
+
+.emptyDay {
+  background-color: var(--bg-secondary);
+  min-height: 100px;
+}
+
+.today {
+  background-color: var(--calendar-today);
+}
+
+.dayNumber {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item {
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  border-radius: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.clickable:hover {
+  transform: scale(1.02);
+  box-shadow: 0 1px 3px var(--shadow);
+}
+
+.taskItem {
+  background-color: var(--bg-secondary);
+  border-left: 3px solid #4caf50;
+  color: var(--text-primary);
+}
+
+.noteItem {
+  background-color: var(--calendar-today);
+  color: var(--accent-color);
+}
+
+.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.more {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  padding: 2px 4px;
+}
+
+.legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.legendColor {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}

@@ -1,0 +1,69 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+
+.backBtn:hover {
+  text-decoration: underline;
+}
+
+.editBtn {
+  padding: 0.5rem 1rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.editBtn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.info {
+  padding: 1rem;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.name {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.company {
+  margin: 0 0 1rem 0;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.detail {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
+}
+
+.section {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+}
+
+.section h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+}

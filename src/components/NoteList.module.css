@@ -1,0 +1,131 @@
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  background-color: var(--note-bg);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.content {
+  flex: 1;
+}
+
+.date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.text {
+  margin: 0;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.deleteBtn:hover {
+  color: #e53935;
+}
+
+.empty {
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 1rem 0;
+}
+
+.editBtn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-right: 0.5rem;
+}
+
+.editBtn:hover {
+  color: var(--accent-color);
+}
+
+.editing {
+  background-color: var(--calendar-today);
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.editDate {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: fit-content;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.editTextarea {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.editButtons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.saveBtn {
+  padding: 0.5rem 1rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.saveBtn:hover {
+  background-color: #43a047;
+}
+
+.cancelBtn {
+  padding: 0.5rem 1rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.cancelBtn:hover {
+  background-color: var(--bg-tertiary);
+}

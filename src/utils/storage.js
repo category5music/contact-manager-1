@@ -1,0 +1,51 @@
+// Generate a unique ID
+export function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Get current timestamp
+export function getTimestamp() {
+  return new Date().toISOString();
+}
+
+// Create a new contact
+export function createContact(data) {
+  return {
+    id: generateId(),
+    firstName: data.firstName || '',
+    lastName: data.lastName || '',
+    email: data.email || '',
+    phone: data.phone || '',
+    company: data.company || '',
+    createdAt: getTimestamp(),
+  };
+}
+
+// Get full name from contact
+export function getFullName(contact) {
+  return `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || 'Unknown';
+}
+
+// Create a new note
+export function createNote(contactId, data) {
+  return {
+    id: generateId(),
+    contactId,
+    content: data.content || '',
+    callDate: data.callDate || new Date().toISOString().split('T')[0],
+    createdAt: getTimestamp(),
+  };
+}
+
+// Create a new task
+export function createTask(contactId, data) {
+  return {
+    id: generateId(),
+    contactId,
+    title: data.title || '',
+    completed: false,
+    dueDate: data.dueDate || '',
+    priority: data.priority || 'low',
+    createdAt: getTimestamp(),
+  };
+}
