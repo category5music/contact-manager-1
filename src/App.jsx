@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocalStorage } from './hooks/useLocalStorage';
+import { useSyncedStorage } from './hooks/useSyncedStorage';
 import { createContact, createNote, createTask, getFullName } from './utils/storage';
 import { Sidebar } from './components/Sidebar';
 import { Layout } from './components/Layout';
@@ -14,11 +14,11 @@ import { NotesListView } from './components/NotesListView';
 // Main navigation: 'contacts' | 'tasks' | 'notes'
 // Contact views: 'list' | 'add' | 'edit' | 'detail'
 function App() {
-  const [contacts, setContacts] = useLocalStorage('contacts', []);
-  const [notes, setNotes] = useLocalStorage('notes', []);
-  const [tasks, setTasks] = useLocalStorage('tasks', []);
-  const [archivedTasks, setArchivedTasks] = useLocalStorage('archivedTasks', []);
-  const [theme, setTheme] = useLocalStorage('theme', 'light');
+  const [contacts, setContacts] = useSyncedStorage('contacts', []);
+  const [notes, setNotes] = useSyncedStorage('notes', []);
+  const [tasks, setTasks] = useSyncedStorage('tasks', []);
+  const [archivedTasks, setArchivedTasks] = useSyncedStorage('archivedTasks', []);
+  const [theme, setTheme] = useSyncedStorage('theme', 'light');
 
   const [mainView, setMainView] = useState('contacts');
   const [contactView, setContactView] = useState('list');

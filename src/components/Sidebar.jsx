@@ -1,3 +1,4 @@
+import { UserMenu } from './auth/UserMenu';
 import styles from './Sidebar.module.css';
 
 export function Sidebar({ currentView, onNavigate, theme, onToggleTheme }) {
@@ -10,6 +11,9 @@ export function Sidebar({ currentView, onNavigate, theme, onToggleTheme }) {
   return (
     <nav className={styles.sidebar}>
       <div className={styles.logo}>Contact Manager</div>
+      <div className={styles.userSection}>
+        <UserMenu />
+      </div>
       <ul className={styles.nav}>
         {navItems.map((item) => (
           <li key={item.id}>
