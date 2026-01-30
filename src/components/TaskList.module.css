@@ -157,3 +157,20 @@
 .cancelBtn:hover {
   background-color: var(--bg-tertiary);
 }
+
+.attachmentToggle {
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  margin-top: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.attachmentToggle:hover {
+  text-decoration: underline;
+}

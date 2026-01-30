@@ -1,0 +1,66 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.wrapper input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.wrapper input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.2);
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 12px var(--shadow);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.suggestion:last-child {
+  border-bottom: none;
+}
+
+.suggestion:hover,
+.suggestion.highlighted {
+  background-color: var(--bg-secondary);
+}
+
+.suggestionName {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.suggestionEmail {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}

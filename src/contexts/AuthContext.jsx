@@ -14,11 +14,19 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [googleAccessToken, setGoogleAccessToken] = useState(() => {
+    return sessionStorage.getItem('googleAccessToken');
+  });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
+      // Clear token if user signs out
+      if (!firebaseUser) {
+        sessionStorage.removeItem('googleAccessToken');
+        setGoogleAccessToken(null);
+      }
     });
     return unsubscribe;
   }, []);
@@ -33,10 +41,26 @@ export function AuthProvider({ children }) {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
+    // Request access to read Google Contacts
+    provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+
+    const result = await signInWithPopup(auth, provider);
+
+    // Extract and store the OAuth access token for Google API calls
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const accessToken = credential?.accessToken;
+
+    if (accessToken) {
+      sessionStorage.setItem('googleAccessToken', accessToken);
+      setGoogleAccessToken(accessToken);
+    }
+
+    return result;
   };
 
   const signOut = async () => {
+    sessionStorage.removeItem('googleAccessToken');
+    setGoogleAccessToken(null);
     return firebaseSignOut(auth);
   };
 
@@ -44,6 +68,8 @@ export function AuthProvider({ children }) {
     user,
     loading,
     isGuest: !user,
+    googleAccessToken,
+    hasGoogleToken: !!googleAccessToken,
     signInWithEmail,
     signUpWithEmail,
     signInWithGoogle,

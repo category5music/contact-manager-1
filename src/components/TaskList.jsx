@@ -1,4 +1,8 @@
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useAttachments } from '../hooks/useAttachments';
+import { AttachmentList } from './AttachmentList';
+import { AttachmentUpload } from './AttachmentUpload';
 import styles from './TaskList.module.css';
 
 const priorityStyles = {
@@ -8,12 +12,26 @@ const priorityStyles = {
 };
 
 function TaskItem({ task, onToggle, onDelete, onUpdate }) {
+  const { isGuest } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [showAttachments, setShowAttachments] = useState(false);
   const [editData, setEditData] = useState({
     title: task.title,
     dueDate: task.dueDate,
     priority: task.priority || 'low',
   });
+
+  const {
+    uploading,
+    error,
+    clearError,
+    handleFileUpload,
+    handleAddLink,
+    handleDelete: handleDeleteAttachment,
+    canAttach,
+  } = useAttachments('tasks', task.id, task.attachments || [], (newAttachments) =>
+    onUpdate(task.id, { attachments: newAttachments })
+  );
 
   const handleSave = () => {
     if (!editData.title.trim()) return;
@@ -30,6 +48,8 @@ function TaskItem({ task, onToggle, onDelete, onUpdate }) {
     setIsEditing(false);
   };
 
+  const attachmentCount = task.attachments?.length || 0;
+
   if (isEditing) {
     return (
       <li className={`${styles.item} ${styles.editing}`}>
@@ -37,28 +57,56 @@ function TaskItem({ task, onToggle, onDelete, onUpdate }) {
           <input
             type="text"
             value={editData.title}
-            onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+            onChange={(e) =>
+              setEditData({ ...editData, title: e.target.value })
+            }
             className={styles.editInput}
             autoFocus
           />
           <input
             type="date"
             value={editData.dueDate}
-            onChange={(e) => setEditData({ ...editData, dueDate: e.target.value })}
+            onChange={(e) =>
+              setEditData({ ...editData, dueDate: e.target.value })
+            }
             className={styles.editDate}
           />
           <select
             value={editData.priority}
-            onChange={(e) => setEditData({ ...editData, priority: e.target.value })}
+            onChange={(e) =>
+              setEditData({ ...editData, priority: e.target.value })
+            }
             className={styles.editPriority}
           >
             <option value="low">Low</option>
             <option value="high">High</option>
             <option value="urgent">Urgent</option>
           </select>
+
+          {/* Attachment Upload in Edit Mode */}
+          <AttachmentUpload
+            onFileSelect={handleFileUpload}
+            onAddLink={handleAddLink}
+            uploading={uploading}
+            error={error}
+            onClearError={clearError}
+            disabled={!canAttach}
+          />
+
+          {/* Show existing attachments */}
+          <AttachmentList
+            attachments={task.attachments}
+            onDelete={handleDeleteAttachment}
+            canDelete={canAttach}
+          />
+
           <div className={styles.editButtons}>
-            <button onClick={handleSave} className={styles.saveBtn}>Save</button>
-            <button onClick={handleCancel} className={styles.cancelBtn}>Cancel</button>
+            <button onClick={handleSave} className={styles.saveBtn}>
+              Save
+            </button>
+            <button onClick={handleCancel} className={styles.cancelBtn}>
+              Cancel
+            </button>
           </div>
         </div>
       </li>
@@ -81,6 +129,29 @@ function TaskItem({ task, onToggle, onDelete, onUpdate }) {
         <span className={styles.title}>{task.title}</span>
         {task.dueDate && (
           <span className={styles.dueDate}>Due: {task.dueDate}</span>
+        )}
+
+        {/* Attachment indicator/toggle */}
+        {attachmentCount > 0 && (
+          <button
+            className={styles.attachmentToggle}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowAttachments(!showAttachments);
+            }}
+          >
+            📎 {attachmentCount} attachment{attachmentCount !== 1 ? 's' : ''}
+            {showAttachments ? ' ▲' : ' ▼'}
+          </button>
+        )}
+
+        {/* Inline attachments display */}
+        {showAttachments && (
+          <AttachmentList
+            attachments={task.attachments}
+            onDelete={handleDeleteAttachment}
+            canDelete={canAttach}
+          />
         )}
       </div>
       <button

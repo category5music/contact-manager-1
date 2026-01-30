@@ -17,6 +17,8 @@ export function createContact(data) {
     email: data.email || '',
     phone: data.phone || '',
     company: data.company || '',
+    biography: data.biography || '',
+    biographyAttachments: data.biographyAttachments || [],
     createdAt: getTimestamp(),
   };
 }
@@ -33,6 +35,7 @@ export function createNote(contactId, data) {
     contactId,
     content: data.content || '',
     callDate: data.callDate || new Date().toISOString().split('T')[0],
+    attachments: data.attachments || [],
     createdAt: getTimestamp(),
   };
 }
@@ -46,6 +49,7 @@ export function createTask(contactId, data) {
     completed: false,
     dueDate: data.dueDate || '',
     priority: data.priority || 'low',
+    attachments: data.attachments || [],
     createdAt: getTimestamp(),
   };
 }

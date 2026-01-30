@@ -1,0 +1,98 @@
+.container {
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.75rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.headerIcon {
+  font-size: 1rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.attachmentItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: var(--bg-tertiary);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.info:hover .name {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+.name {
+  display: block;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.viewBtn,
+.deleteBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: 4px;
+}
+
+.viewBtn:hover {
+  background-color: var(--bg-secondary);
+}
+
+.deleteBtn {
+  color: var(--text-muted);
+  font-size: 1.25rem;
+}
+
+.deleteBtn:hover {
+  color: #e53935;
+  background-color: rgba(229, 57, 53, 0.1);
+}

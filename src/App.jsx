@@ -67,6 +67,16 @@ function App() {
     setContactView('detail');
   };
 
+  // Partial update for contact (used by attachments, stays on same view)
+  const handleUpdateContactPartial = (updates) => {
+    if (!selectedContact) return;
+    const updatedContact = { ...selectedContact, ...updates };
+    setContacts(
+      contacts.map((c) => (c.id === selectedContact.id ? updatedContact : c))
+    );
+    setSelectedContact(updatedContact);
+  };
+
   const handleDeleteContact = (id) => {
     if (!confirm('Delete this contact and all their notes/tasks?')) return;
     setContacts(contacts.filter((c) => c.id !== id));
@@ -507,6 +517,7 @@ function App() {
               setContactView('list');
             }}
             onEdit={() => setContactView('edit')}
+            onUpdateContact={handleUpdateContactPartial}
             onAddNote={handleAddNote}
             onDeleteNote={handleDeleteNote}
             onUpdateNote={handleUpdateNote}

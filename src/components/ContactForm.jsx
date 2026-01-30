@@ -1,19 +1,43 @@
 import { useState } from 'react';
+import { AutocompleteInput } from './AutocompleteInput';
+import { useGoogleContacts } from '../hooks/useGoogleContacts';
 import styles from './ContactForm.module.css';
 
 export function ContactForm({ contact, onSave, onCancel }) {
+  const { contacts: googleContacts, isAvailable } = useGoogleContacts();
+
   const [formData, setFormData] = useState({
     firstName: contact?.firstName || '',
     lastName: contact?.lastName || '',
     email: contact?.email || '',
     phone: contact?.phone || '',
     company: contact?.company || '',
+    biography: contact?.biography || '',
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleFirstNameChange = (value) => {
+    setFormData((prev) => ({ ...prev, firstName: value }));
+  };
+
+  const handleGoogleContactSelect = (googleContact) => {
+    // Auto-fill all fields from the selected Google contact
+    setFormData({
+      firstName: googleContact.firstName || formData.firstName,
+      lastName: googleContact.lastName || formData.lastName,
+      email: googleContact.email || formData.email,
+      phone: googleContact.phone || formData.phone,
+      company: googleContact.company || formData.company,
+      biography: googleContact.biography || formData.biography,
+    });
+  };
+
+  // Show autocomplete only for new contacts when Google Contacts is available
+  const showAutocomplete = isAvailable && !contact;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -26,18 +50,36 @@ export function ContactForm({ contact, onSave, onCancel }) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      {showAutocomplete && (
+        <div className={styles.googleHint}>
+          Start typing to search your Google Contacts
+        </div>
+      )}
       <div className={styles.nameRow}>
         <div className={styles.field}>
           <label htmlFor="firstName">First Name *</label>
-          <input
-            type="text"
-            id="firstName"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            placeholder="John"
-            autoFocus
-          />
+          {showAutocomplete ? (
+            <AutocompleteInput
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleFirstNameChange}
+              suggestions={googleContacts}
+              onSelect={handleGoogleContactSelect}
+              placeholder="John"
+              autoFocus
+            />
+          ) : (
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              placeholder="John"
+              autoFocus
+            />
+          )}
         </div>
 
         <div className={styles.field}>
@@ -86,6 +128,19 @@ export function ContactForm({ contact, onSave, onCancel }) {
           value={formData.company}
           onChange={handleChange}
           placeholder="Acme Inc"
+        />
+      </div>
+
+      <div className={styles.field}>
+        <label htmlFor="biography">About / Biography</label>
+        <textarea
+          id="biography"
+          name="biography"
+          value={formData.biography}
+          onChange={handleChange}
+          placeholder="Add notes about this contact..."
+          rows={4}
+          className={styles.textarea}
         />
       </div>
 
