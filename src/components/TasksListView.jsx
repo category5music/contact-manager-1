@@ -7,7 +7,7 @@ const priorityOrder = { urgent: 0, high: 1, low: 2 };
 const priorityLabels = { urgent: 'Urgent', high: 'High Priority', low: 'Low Priority' };
 const priorityColors = { urgent: '#f44336', high: '#ff9800', low: '#4caf50' };
 
-export function TasksListView({ tasks, contacts, onTaskClick }) {
+export function TasksListView({ tasks, contacts, onTaskClick, projects = [] }) {
   // Persist sort preference in localStorage
   const [sortConfig, setSortConfig] = useLocalStorage('taskSortPreference', {
     sortBy: 'priority',
@@ -86,8 +86,15 @@ export function TasksListView({ tasks, contacts, onTaskClick }) {
     return sortConfig.sortDirection === 'asc' ? ' ↑' : ' ↓';
   };
 
+  const getProject = (projectId) => {
+    if (!projectId) return null;
+    return projects.find((p) => p.id === projectId);
+  };
+
   // Render task item (extracted for reuse)
-  const renderTaskItem = (task) => (
+  const renderTaskItem = (task) => {
+    const project = getProject(task.projectId);
+    return (
     <li
       key={task.id}
       className={`${styles.item} ${task.completed ? styles.completed : ''} ${task.contactId ? styles.clickable : ''}`}
@@ -100,6 +107,11 @@ export function TasksListView({ tasks, contacts, onTaskClick }) {
       <div className={styles.content}>
         <div className={styles.titleRow}>
           <span className={styles.title}>{task.title}</span>
+          {project && (
+            <span className={styles.projectTag} style={{ backgroundColor: project.color }}>
+              {project.name}
+            </span>
+          )}
           {task.completed && <span className={styles.badge}>Done</span>}
         </div>
         <div className={styles.meta}>
@@ -112,6 +124,7 @@ export function TasksListView({ tasks, contacts, onTaskClick }) {
       <span className={styles.arrow}>&rarr;</span>
     </li>
   );
+  };
 
   if (tasks.length === 0) {
     return (

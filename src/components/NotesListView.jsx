@@ -1,7 +1,7 @@
 import styles from './NotesListView.module.css';
 import { getFullName } from '../utils/storage';
 
-export function NotesListView({ notes, contacts, onNoteClick }) {
+export function NotesListView({ notes, contacts, onNoteClick, projects = [] }) {
   // Sort notes chronologically by callDate (newest first)
   const sortedNotes = [...notes].sort((a, b) => {
     if (a.callDate && b.callDate) return b.callDate.localeCompare(a.callDate);
@@ -24,6 +24,11 @@ export function NotesListView({ notes, contacts, onNoteClick }) {
     if (!contactId) return 'No Contact';
     const contact = contacts.find((c) => c.id === contactId);
     return contact ? getFullName(contact) : 'Unknown';
+  };
+
+  const getProject = (projectId) => {
+    if (!projectId) return null;
+    return projects.find((p) => p.id === projectId);
   };
 
   const formatDate = (dateStr) => {
@@ -54,21 +59,31 @@ export function NotesListView({ notes, contacts, onNoteClick }) {
             <span className={styles.count}>({dateNotes.length})</span>
           </h3>
           <ul className={styles.list}>
-            {dateNotes.map((note) => (
-              <li
-                key={note.id}
-                className={`${styles.item} ${note.contactId ? styles.clickable : ''}`}
-                onClick={() => note.contactId && onNoteClick && onNoteClick(note.contactId)}
-              >
-                <div className={styles.content}>
-                  <div className={styles.noteText}>{note.content}</div>
-                  <div className={styles.meta}>
-                    <span className={styles.contact}>{getContactName(note.contactId)}</span>
+            {dateNotes.map((note) => {
+              const project = getProject(note.projectId);
+              return (
+                <li
+                  key={note.id}
+                  className={`${styles.item} ${note.contactId ? styles.clickable : ''}`}
+                  onClick={() => note.contactId && onNoteClick && onNoteClick(note.contactId)}
+                >
+                  <div className={styles.content}>
+                    <div className={styles.noteText}>
+                      {note.content}
+                      {project && (
+                        <span className={styles.projectTag} style={{ backgroundColor: project.color }}>
+                          {project.name}
+                        </span>
+                      )}
+                    </div>
+                    <div className={styles.meta}>
+                      <span className={styles.contact}>{getContactName(note.contactId)}</span>
+                    </div>
                   </div>
-                </div>
-                {note.contactId && <span className={styles.arrow}>&rarr;</span>}
-              </li>
-            ))}
+                  {note.contactId && <span className={styles.arrow}>&rarr;</span>}
+                </li>
+              );
+            })}
           </ul>
         </div>
       ))}

@@ -1,18 +1,31 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAttachments } from '../hooks/useAttachments';
+import { useAutoSave } from '../hooks/useAutoSave';
 import { AttachmentList } from './AttachmentList';
 import { AttachmentUpload } from './AttachmentUpload';
 import styles from './NoteList.module.css';
 
-function NoteItem({ note, onDelete, onUpdate }) {
+function NoteItem({ note, onDelete, onUpdate, projects = [] }) {
   const { isGuest } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
-  const [editData, setEditData] = useState({
-    content: note.content,
-    callDate: note.callDate,
-  });
+
+  const handleSave = useCallback(
+    (data) => {
+      onUpdate(note.id, data);
+    },
+    [note.id, onUpdate]
+  );
+
+  const { editData, setEditData, saveStatus, reset } = useAutoSave(
+    {
+      content: note.content,
+      callDate: note.callDate,
+      projectId: note.projectId || '',
+    },
+    handleSave
+  );
 
   const {
     uploading,
@@ -26,21 +39,22 @@ function NoteItem({ note, onDelete, onUpdate }) {
     onUpdate(note.id, { attachments: newAttachments })
   );
 
-  const handleSave = () => {
-    if (!editData.content.trim()) return;
-    onUpdate(note.id, editData);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditData({
+  const handleStartEdit = () => {
+    reset({
       content: note.content,
       callDate: note.callDate,
+      projectId: note.projectId || '',
     });
+    setIsEditing(true);
+  };
+
+  const handleDone = () => {
+    if (!editData.content.trim()) return;
     setIsEditing(false);
   };
 
   const attachmentCount = note.attachments?.length || 0;
+  const project = note.projectId ? projects.find((p) => p.id === note.projectId) : null;
 
   if (isEditing) {
     return (
@@ -64,6 +78,24 @@ function NoteItem({ note, onDelete, onUpdate }) {
             autoFocus
           />
 
+          {/* Project Selector */}
+          {projects.length > 0 && (
+            <select
+              value={editData.projectId}
+              onChange={(e) =>
+                setEditData({ ...editData, projectId: e.target.value || null })
+              }
+              className={styles.editProject}
+            >
+              <option value="">No Project</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          )}
+
           {/* Attachment Upload in Edit Mode */}
           <AttachmentUpload
             onFileSelect={handleFileUpload}
@@ -82,12 +114,13 @@ function NoteItem({ note, onDelete, onUpdate }) {
           />
 
           <div className={styles.editButtons}>
-            <button onClick={handleSave} className={styles.saveBtn}>
-              Save
+            <button onClick={handleDone} className={styles.doneBtn}>
+              Done
             </button>
-            <button onClick={handleCancel} className={styles.cancelBtn}>
-              Cancel
-            </button>
+            <span className={styles.saveStatus}>
+              {saveStatus === 'saving' && 'Saving...'}
+              {saveStatus === 'saved' && 'Saved'}
+            </span>
           </div>
         </div>
       </li>
@@ -98,6 +131,11 @@ function NoteItem({ note, onDelete, onUpdate }) {
     <li className={styles.item}>
       <div className={styles.content}>
         <span className={styles.date}>{note.callDate}</span>
+        {project && (
+          <span className={styles.projectTag} style={{ backgroundColor: project.color }}>
+            {project.name}
+          </span>
+        )}
         <p className={styles.text}>{note.content}</p>
 
         {/* Attachment indicator/toggle */}
@@ -122,7 +160,7 @@ function NoteItem({ note, onDelete, onUpdate }) {
       </div>
       <button
         className={styles.editBtn}
-        onClick={() => setIsEditing(true)}
+        onClick={handleStartEdit}
         aria-label="Edit note"
       >
         ✎
@@ -138,7 +176,7 @@ function NoteItem({ note, onDelete, onUpdate }) {
   );
 }
 
-export function NoteList({ notes, onDelete, onUpdate }) {
+export function NoteList({ notes, onDelete, onUpdate, projects = [] }) {
   if (notes.length === 0) {
     return <p className={styles.empty}>No call notes yet.</p>;
   }
@@ -151,6 +189,7 @@ export function NoteList({ notes, onDelete, onUpdate }) {
           note={note}
           onDelete={onDelete}
           onUpdate={onUpdate}
+          projects={projects}
         />
       ))}
     </ul>

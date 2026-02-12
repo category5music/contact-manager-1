@@ -28,6 +28,17 @@ export function getFullName(contact) {
   return `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || 'Unknown';
 }
 
+// Create a new project
+export function createProject(name) {
+  const colors = ['#4a90d9', '#e91e63', '#4caf50', '#ff9800', '#9c27b0', '#00bcd4', '#795548'];
+  return {
+    id: generateId(),
+    name,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    createdAt: getTimestamp(),
+  };
+}
+
 // Create a new note
 export function createNote(contactId, data) {
   return {
@@ -36,6 +47,7 @@ export function createNote(contactId, data) {
     content: data.content || '',
     callDate: data.callDate || new Date().toISOString().split('T')[0],
     attachments: data.attachments || [],
+    projectId: data.projectId || null,
     createdAt: getTimestamp(),
   };
 }
@@ -50,6 +62,7 @@ export function createTask(contactId, data) {
     dueDate: data.dueDate || '',
     priority: data.priority || 'low',
     attachments: data.attachments || [],
+    projectId: data.projectId || null,
     createdAt: getTimestamp(),
   };
 }

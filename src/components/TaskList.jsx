@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAttachments } from '../hooks/useAttachments';
+import { useAutoSave } from '../hooks/useAutoSave';
 import { AttachmentList } from './AttachmentList';
 import { AttachmentUpload } from './AttachmentUpload';
 import styles from './TaskList.module.css';
@@ -11,15 +12,27 @@ const priorityStyles = {
   urgent: styles.priorityUrgent,
 };
 
-function TaskItem({ task, onToggle, onDelete, onUpdate }) {
+function TaskItem({ task, onToggle, onDelete, onUpdate, projects = [] }) {
   const { isGuest } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
-  const [editData, setEditData] = useState({
-    title: task.title,
-    dueDate: task.dueDate,
-    priority: task.priority || 'low',
-  });
+
+  const handleSave = useCallback(
+    (data) => {
+      onUpdate(task.id, data);
+    },
+    [task.id, onUpdate]
+  );
+
+  const { editData, setEditData, saveStatus, reset } = useAutoSave(
+    {
+      title: task.title,
+      dueDate: task.dueDate,
+      priority: task.priority || 'low',
+      projectId: task.projectId || '',
+    },
+    handleSave
+  );
 
   const {
     uploading,
@@ -33,22 +46,23 @@ function TaskItem({ task, onToggle, onDelete, onUpdate }) {
     onUpdate(task.id, { attachments: newAttachments })
   );
 
-  const handleSave = () => {
-    if (!editData.title.trim()) return;
-    onUpdate(task.id, editData);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditData({
+  const handleStartEdit = () => {
+    reset({
       title: task.title,
       dueDate: task.dueDate,
       priority: task.priority || 'low',
+      projectId: task.projectId || '',
     });
+    setIsEditing(true);
+  };
+
+  const handleDone = () => {
+    if (!editData.title.trim()) return;
     setIsEditing(false);
   };
 
   const attachmentCount = task.attachments?.length || 0;
+  const project = task.projectId ? projects.find((p) => p.id === task.projectId) : null;
 
   if (isEditing) {
     return (
@@ -83,6 +97,24 @@ function TaskItem({ task, onToggle, onDelete, onUpdate }) {
             <option value="urgent">Urgent</option>
           </select>
 
+          {/* Project Selector */}
+          {projects.length > 0 && (
+            <select
+              value={editData.projectId}
+              onChange={(e) =>
+                setEditData({ ...editData, projectId: e.target.value || null })
+              }
+              className={styles.editProject}
+            >
+              <option value="">No Project</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          )}
+
           {/* Attachment Upload in Edit Mode */}
           <AttachmentUpload
             onFileSelect={handleFileUpload}
@@ -101,12 +133,13 @@ function TaskItem({ task, onToggle, onDelete, onUpdate }) {
           />
 
           <div className={styles.editButtons}>
-            <button onClick={handleSave} className={styles.saveBtn}>
-              Save
+            <button onClick={handleDone} className={styles.doneBtn}>
+              Done
             </button>
-            <button onClick={handleCancel} className={styles.cancelBtn}>
-              Cancel
-            </button>
+            <span className={styles.saveStatus}>
+              {saveStatus === 'saving' && 'Saving...'}
+              {saveStatus === 'saved' && 'Saved'}
+            </span>
           </div>
         </div>
       </li>
@@ -126,7 +159,14 @@ function TaskItem({ task, onToggle, onDelete, onUpdate }) {
         <span className={styles.checkmark}></span>
       </label>
       <div className={styles.content}>
-        <span className={styles.title}>{task.title}</span>
+        <span className={styles.title}>
+          {task.title}
+          {project && (
+            <span className={styles.projectTag} style={{ backgroundColor: project.color }}>
+              {project.name}
+            </span>
+          )}
+        </span>
         {task.dueDate && (
           <span className={styles.dueDate}>Due: {task.dueDate}</span>
         )}
@@ -156,7 +196,7 @@ function TaskItem({ task, onToggle, onDelete, onUpdate }) {
       </div>
       <button
         className={styles.editBtn}
-        onClick={() => setIsEditing(true)}
+        onClick={handleStartEdit}
         aria-label="Edit task"
       >
         ✎
@@ -172,7 +212,7 @@ function TaskItem({ task, onToggle, onDelete, onUpdate }) {
   );
 }
 
-export function TaskList({ tasks, onToggle, onDelete, onUpdate }) {
+export function TaskList({ tasks, onToggle, onDelete, onUpdate, projects = [] }) {
   if (tasks.length === 0) {
     return <p className={styles.empty}>No tasks yet.</p>;
   }
@@ -186,6 +226,7 @@ export function TaskList({ tasks, onToggle, onDelete, onUpdate }) {
           onToggle={onToggle}
           onDelete={onDelete}
           onUpdate={onUpdate}
+          projects={projects}
         />
       ))}
     </ul>

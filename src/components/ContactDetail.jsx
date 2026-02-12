@@ -24,6 +24,7 @@ export function ContactDetail({
   onToggleTask,
   onDeleteTask,
   onUpdateTask,
+  projects = [],
 }) {
   const { isGuest } = useAuth();
   const [showBioAttachments, setShowBioAttachments] = useState(false);
@@ -112,18 +113,19 @@ export function ContactDetail({
 
       <div className={styles.section}>
         <h3>Call Notes</h3>
-        <NoteForm onSave={onAddNote} />
-        <NoteList notes={notes} onDelete={onDeleteNote} onUpdate={onUpdateNote} />
+        <NoteForm onSave={onAddNote} projects={projects} />
+        <NoteList notes={notes} onDelete={onDeleteNote} onUpdate={onUpdateNote} projects={projects} />
       </div>
 
       <div className={styles.section}>
         <h3>Tasks</h3>
-        <TaskForm onSave={onAddTask} />
+        <TaskForm onSave={onAddTask} projects={projects} />
         <TaskList
           tasks={tasks}
           onToggle={onToggleTask}
           onDelete={onDeleteTask}
           onUpdate={onUpdateTask}
+          projects={projects}
         />
       </div>
     </div>

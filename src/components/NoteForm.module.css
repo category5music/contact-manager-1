@@ -44,3 +44,14 @@
 .addBtn:hover {
   background-color: var(--accent-hover);
 }
+
+.projectSelect {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: fit-content;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+}

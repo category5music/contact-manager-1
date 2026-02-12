@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSyncedStorage } from './hooks/useSyncedStorage';
-import { createContact, createNote, createTask, getFullName } from './utils/storage';
+import { createContact, createNote, createTask, createProject, getFullName } from './utils/storage';
 import { Sidebar } from './components/Sidebar';
 import { Layout } from './components/Layout';
 import { ContactList } from './components/ContactList';
@@ -19,12 +19,15 @@ function App() {
   const [tasks, setTasks] = useSyncedStorage('tasks', []);
   const [archivedTasks, setArchivedTasks] = useSyncedStorage('archivedTasks', []);
   const [theme, setTheme] = useSyncedStorage('theme', 'light');
+  const [sidebarCollapsed, setSidebarCollapsed] = useSyncedStorage('sidebarCollapsed', false);
+  const [projects, setProjects] = useSyncedStorage('projects', []);
 
   const [mainView, setMainView] = useState('contacts');
   const [contactView, setContactView] = useState('list');
   const [tasksViewMode, setTasksViewMode] = useState('list'); // 'calendar' | 'list'
   const [notesViewMode, setNotesViewMode] = useState('list'); // 'calendar' | 'list'
   const [selectedContact, setSelectedContact] = useState(null);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [contactSortBy, setContactSortBy] = useState('firstName'); // 'firstName' | 'lastName' | 'dateAdded'
   const [taskSearchQuery, setTaskSearchQuery] = useState('');
@@ -41,13 +44,37 @@ function App() {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  // Project handlers
+  const handleAddProject = (name) => {
+    const newProject = createProject(name);
+    setProjects([...projects, newProject]);
+  };
+
+  const handleDeleteProject = (id) => {
+    setProjects(projects.filter((p) => p.id !== id));
+    // Unassign project from notes and tasks
+    setNotes(notes.map((n) => (n.projectId === id ? { ...n, projectId: null } : n)));
+    setTasks(tasks.map((t) => (t.projectId === id ? { ...t, projectId: null } : t)));
+  };
+
   // Handle sidebar navigation
   const handleNavigate = (view) => {
     setMainView(view);
+    setSelectedProjectId(null); // Clear project selection when navigating
     if (view === 'contacts') {
       setContactView('list');
       setSelectedContact(null);
     }
+  };
+
+  // Handle project selection
+  const handleSelectProject = (projectId) => {
+    setSelectedProjectId(projectId);
+    setMainView('project');
   };
 
   // Contact handlers
@@ -227,6 +254,99 @@ function App() {
 
   // Render content based on main view
   const renderContent = () => {
+    // Project view - shows all notes and tasks for a specific project
+    if (mainView === 'project' && selectedProjectId) {
+      const selectedProject = projects.find((p) => p.id === selectedProjectId);
+      if (!selectedProject) {
+        setMainView('contacts');
+        setSelectedProjectId(null);
+        return null;
+      }
+
+      const projectTasks = tasks.filter((t) => t.projectId === selectedProjectId);
+      const projectNotes = notes.filter((n) => n.projectId === selectedProjectId);
+
+      return (
+        <Layout
+          title={
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  backgroundColor: selectedProject.color,
+                  display: 'inline-block',
+                }}
+              />
+              {selectedProject.name}
+            </span>
+          }
+          action={
+            <button
+              onClick={() => {
+                if (confirm('Delete this project? Notes and tasks will be untagged but not deleted.')) {
+                  handleDeleteProject(selectedProjectId);
+                  setMainView('contacts');
+                  setSelectedProjectId(null);
+                }
+              }}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#f44336',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Delete Project
+            </button>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {/* Tasks Section */}
+            <div>
+              <h3 style={{ margin: '0 0 1rem 0', color: 'var(--text-primary)' }}>
+                Tasks ({projectTasks.length})
+              </h3>
+              {projectTasks.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  No tasks in this project yet.
+                </p>
+              ) : (
+                <TasksListView
+                  tasks={projectTasks}
+                  contacts={contacts}
+                  onTaskClick={handleCalendarItemClick}
+                  projects={projects}
+                />
+              )}
+            </div>
+
+            {/* Notes Section */}
+            <div>
+              <h3 style={{ margin: '0 0 1rem 0', color: 'var(--text-primary)' }}>
+                Notes ({projectNotes.length})
+              </h3>
+              {projectNotes.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  No notes in this project yet.
+                </p>
+              ) : (
+                <NotesListView
+                  notes={projectNotes}
+                  contacts={contacts}
+                  onNoteClick={handleCalendarItemClick}
+                  projects={projects}
+                />
+              )}
+            </div>
+          </div>
+        </Layout>
+      );
+    }
+
     // Calendar views for tasks and notes
     if (mainView === 'tasks') {
       return (
@@ -371,7 +491,7 @@ function App() {
               {showTaskForm && (
                 <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px' }}>
                   <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>New Task</h4>
-                  <TaskForm onSave={handleAddStandaloneTask} />
+                  <TaskForm onSave={handleAddStandaloneTask} projects={projects} />
                 </div>
               )}
               <input
@@ -395,6 +515,7 @@ function App() {
                   tasks={filteredTasks}
                   contacts={contacts}
                   onTaskClick={handleCalendarItemClick}
+                  projects={projects}
                 />
               ) : (
                 <Calendar
@@ -467,6 +588,7 @@ function App() {
               notes={filteredNotes}
               contacts={contacts}
               onNoteClick={handleCalendarItemClick}
+              projects={projects}
             />
           ) : (
             <Calendar
@@ -525,6 +647,7 @@ function App() {
             onToggleTask={handleToggleTask}
             onDeleteTask={handleDeleteTask}
             onUpdateTask={handleUpdateTask}
+            projects={projects}
           />
         </Layout>
       );
@@ -595,8 +718,20 @@ function App() {
 
   return (
     <div style={{ display: 'flex' }}>
-      <Sidebar currentView={mainView} onNavigate={handleNavigate} theme={theme} onToggleTheme={toggleTheme} />
-      <main style={{ marginLeft: '200px', flex: 1, minHeight: '100vh' }}>
+      <Sidebar
+        currentView={mainView}
+        onNavigate={handleNavigate}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapsed}
+        projects={projects}
+        onAddProject={handleAddProject}
+        onDeleteProject={handleDeleteProject}
+        selectedProjectId={selectedProjectId}
+        onSelectProject={handleSelectProject}
+      />
+      <main style={{ marginLeft: sidebarCollapsed ? '60px' : '200px', flex: 1, minHeight: '100vh', transition: 'margin-left 0.3s ease' }}>
         {renderContent()}
       </main>
     </div>
