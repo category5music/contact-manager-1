@@ -79,13 +79,18 @@
   transition: transform 0.1s, box-shadow 0.1s;
 }
 
-.item.clickable {
+.checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 0.75rem;
   cursor: pointer;
 }
 
-.item.clickable:hover {
-  transform: translateX(4px);
-  box-shadow: 0 2px 8px var(--shadow);
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent-color);
 }
 
 .item.completed {
@@ -107,6 +112,14 @@
 .content {
   flex: 1;
   min-width: 0;
+}
+
+.content.clickable {
+  cursor: pointer;
+}
+
+.content.clickable:hover {
+  opacity: 0.8;
 }
 
 .titleRow {

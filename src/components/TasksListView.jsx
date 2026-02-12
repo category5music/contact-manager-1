@@ -7,7 +7,7 @@ const priorityOrder = { urgent: 0, high: 1, low: 2 };
 const priorityLabels = { urgent: 'Urgent', high: 'High Priority', low: 'Low Priority' };
 const priorityColors = { urgent: '#f44336', high: '#ff9800', low: '#4caf50' };
 
-export function TasksListView({ tasks, contacts, onTaskClick, projects = [] }) {
+export function TasksListView({ tasks, contacts, onTaskClick, onToggleTask, projects = [] }) {
   // Persist sort preference in localStorage
   const [sortConfig, setSortConfig] = useLocalStorage('taskSortPreference', {
     sortBy: 'priority',
@@ -97,14 +97,28 @@ export function TasksListView({ tasks, contacts, onTaskClick, projects = [] }) {
     return (
     <li
       key={task.id}
-      className={`${styles.item} ${task.completed ? styles.completed : ''} ${task.contactId ? styles.clickable : ''}`}
-      onClick={() => task.contactId && onTaskClick(task.contactId)}
+      className={`${styles.item} ${task.completed ? styles.completed : ''}`}
     >
+      {onToggleTask && (
+        <label
+          className={styles.checkbox}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <input
+            type="checkbox"
+            checked={task.completed}
+            onChange={() => onToggleTask(task.id)}
+          />
+        </label>
+      )}
       <div
         className={styles.priorityBar}
         style={{ backgroundColor: priorityColors[task.priority] || priorityColors.low }}
       />
-      <div className={styles.content}>
+      <div
+        className={`${styles.content} ${task.contactId ? styles.clickable : ''}`}
+        onClick={() => task.contactId && onTaskClick(task.contactId)}
+      >
         <div className={styles.titleRow}>
           <span className={styles.title}>{task.title}</span>
           {project && (
@@ -121,7 +135,7 @@ export function TasksListView({ tasks, contacts, onTaskClick, projects = [] }) {
           )}
         </div>
       </div>
-      <span className={styles.arrow}>&rarr;</span>
+      {task.contactId && <span className={styles.arrow}>&rarr;</span>}
     </li>
   );
   };

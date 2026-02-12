@@ -319,6 +319,7 @@ function App() {
                   tasks={projectTasks}
                   contacts={contacts}
                   onTaskClick={handleCalendarItemClick}
+                  onToggleTask={handleToggleTask}
                   projects={projects}
                 />
               )}
@@ -519,6 +520,7 @@ function App() {
                   tasks={filteredTasks}
                   contacts={contacts}
                   onTaskClick={handleCalendarItemClick}
+                  onToggleTask={handleToggleTask}
                   projects={projects}
                 />
               ) : (
