@@ -49,8 +49,8 @@ function App() {
   };
 
   // Project handlers
-  const handleAddProject = (name) => {
-    const newProject = createProject(name);
+  const handleAddProject = (name, color) => {
+    const newProject = createProject(name, color);
     setProjects([...projects, newProject]);
   };
 
@@ -467,7 +467,11 @@ function App() {
                           Restore
                         </button>
                         <button
-                          onClick={() => handleDeleteArchivedTask(task.id)}
+                          onClick={() => {
+                            if (confirm('Permanently delete this task?')) {
+                              handleDeleteArchivedTask(task.id);
+                            }
+                          }}
                           style={{
                             padding: '0.25rem 0.75rem',
                             backgroundColor: '#f44336',

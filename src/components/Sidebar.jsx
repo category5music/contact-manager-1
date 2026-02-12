@@ -17,6 +17,7 @@ export function Sidebar({
 }) {
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectColor, setNewProjectColor] = useState('#4a90d9');
 
   const navItems = [
     { id: 'contacts', label: 'Contacts', icon: '👥' },
@@ -24,15 +25,17 @@ export function Sidebar({
     { id: 'notes', label: 'Notes', icon: '📝' },
   ];
 
+  const projectColors = ['#4a90d9', '#e91e63', '#4caf50', '#ff9800', '#9c27b0', '#00bcd4', '#795548', '#607d8b'];
+
   const handleAddProject = (e) => {
     e.preventDefault();
     if (!newProjectName.trim()) return;
-    onAddProject(newProjectName.trim());
+    onAddProject(newProjectName.trim(), newProjectColor);
     setNewProjectName('');
+    setNewProjectColor('#4a90d9');
     setShowProjectForm(false);
   };
 
-  const projectColors = ['#4a90d9', '#e91e63', '#4caf50', '#ff9800', '#9c27b0', '#00bcd4', '#795548'];
   const getProjectColor = (index) => projectColors[index % projectColors.length];
 
   return (
@@ -83,12 +86,22 @@ export function Sidebar({
               placeholder="Project name..."
               className={styles.projectInput}
               autoFocus
-              onBlur={() => {
-                if (!newProjectName.trim()) {
-                  setShowProjectForm(false);
-                }
-              }}
             />
+            <div className={styles.colorPicker}>
+              {projectColors.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  className={`${styles.colorSwatch} ${newProjectColor === color ? styles.colorSwatchActive : ''}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => setNewProjectColor(color)}
+                  aria-label={`Select color ${color}`}
+                />
+              ))}
+            </div>
+            <button type="submit" className={styles.projectSubmitBtn}>
+              Add
+            </button>
           </form>
         )}
 

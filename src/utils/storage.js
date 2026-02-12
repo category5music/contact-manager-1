@@ -29,12 +29,12 @@ export function getFullName(contact) {
 }
 
 // Create a new project
-export function createProject(name) {
-  const colors = ['#4a90d9', '#e91e63', '#4caf50', '#ff9800', '#9c27b0', '#00bcd4', '#795548'];
+export function createProject(name, color) {
+  const defaultColors = ['#4a90d9', '#e91e63', '#4caf50', '#ff9800', '#9c27b0', '#00bcd4', '#795548'];
   return {
     id: generateId(),
     name,
-    color: colors[Math.floor(Math.random() * colors.length)],
+    color: color || defaultColors[Math.floor(Math.random() * defaultColors.length)],
     createdAt: getTimestamp(),
   };
 }
