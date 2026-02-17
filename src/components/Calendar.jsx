@@ -14,7 +14,7 @@ const priorityColors = {
   urgent: '#f44336',
 };
 
-export function Calendar({ tasks, notes, contacts, filter, onItemClick }) {
+export function Calendar({ tasks, contacts, onItemClick }) {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const year = currentDate.getFullYear();
@@ -38,35 +38,19 @@ export function Calendar({ tasks, notes, contacts, filter, onItemClick }) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const items = [];
 
-    if (filter === 'tasks' || filter === 'all') {
-      tasks.forEach((task) => {
-        if (task.dueDate === dateStr) {
-          const contact = task.contactId ? contacts.find((c) => c.id === task.contactId) : null;
-          items.push({
-            type: 'task',
-            title: task.title,
-            priority: task.priority,
-            contactId: task.contactId,
-            contactName: contact ? getFullName(contact) : (task.contactId ? 'Unknown' : 'No Contact'),
-            completed: task.completed,
-          });
-        }
-      });
-    }
-
-    if (filter === 'notes' || filter === 'all') {
-      notes.forEach((note) => {
-        if (note.callDate === dateStr) {
-          const contact = contacts.find((c) => c.id === note.contactId);
-          items.push({
-            type: 'note',
-            content: note.content,
-            contactId: note.contactId,
-            contactName: contact ? getFullName(contact) : 'Unknown',
-          });
-        }
-      });
-    }
+    tasks.forEach((task) => {
+      if (task.dueDate === dateStr) {
+        const contact = task.contactId ? contacts.find((c) => c.id === task.contactId) : null;
+        items.push({
+          type: 'task',
+          title: task.title,
+          priority: task.priority,
+          contactId: task.contactId,
+          contactName: contact ? getFullName(contact) : (task.contactId ? 'Unknown' : 'No Contact'),
+          completed: task.completed,
+        });
+      }
+    });
 
     return items;
   };
@@ -97,22 +81,14 @@ export function Calendar({ tasks, notes, contacts, filter, onItemClick }) {
           {items.slice(0, 3).map((item, idx) => (
             <div
               key={idx}
-              className={`${styles.item} ${item.contactId ? styles.clickable : ''} ${item.type === 'task' ? styles.taskItem : styles.noteItem}`}
-              style={
-                item.type === 'task'
-                  ? { borderLeftColor: priorityColors[item.priority] || priorityColors.low }
-                  : {}
-              }
-              title={`${item.contactName}: ${item.title || item.content}${item.contactId ? ' (Click to view contact)' : ''}`}
+              className={`${styles.item} ${item.contactId ? styles.clickable : ''} ${styles.taskItem}`}
+              style={{ borderLeftColor: priorityColors[item.priority] || priorityColors.low }}
+              title={`${item.contactName}: ${item.title}${item.contactId ? ' (Click to view contact)' : ''}`}
               onClick={() => item.contactId && onItemClick && onItemClick(item.contactId)}
             >
-              {item.type === 'task' ? (
-                <span className={item.completed ? styles.completed : ''}>
-                  {item.title}
-                </span>
-              ) : (
-                <span>{item.content.substring(0, 20)}...</span>
-              )}
+              <span className={item.completed ? styles.completed : ''}>
+                {item.title}
+              </span>
             </div>
           ))}
           {items.length > 3 && (
@@ -160,12 +136,6 @@ export function Calendar({ tasks, notes, contacts, filter, onItemClick }) {
           <span className={styles.legendColor} style={{ backgroundColor: '#f44336' }}></span>
           Urgent
         </span>
-        {filter !== 'tasks' && (
-          <span className={styles.legendItem}>
-            <span className={styles.legendColor} style={{ backgroundColor: '#e3f2fd' }}></span>
-            Notes
-          </span>
-        )}
       </div>
     </div>
   );

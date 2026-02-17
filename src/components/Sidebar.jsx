@@ -22,7 +22,7 @@ export function Sidebar({
   const navItems = [
     { id: 'contacts', label: 'Contacts', icon: '👥' },
     { id: 'tasks', label: 'Tasks', icon: '✓' },
-    { id: 'notes', label: 'Notes', icon: '📝' },
+    { id: 'notes', label: 'Contact Notes', icon: '📝' },
   ];
 
   const projectColors = ['#4a90d9', '#e91e63', '#4caf50', '#ff9800', '#9c27b0', '#00bcd4', '#795548', '#607d8b'];

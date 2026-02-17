@@ -19,6 +19,8 @@ export function createContact(data) {
     company: data.company || '',
     biography: data.biography || '',
     biographyAttachments: data.biographyAttachments || [],
+    contactNotes: data.contactNotes || '',
+    contactNotesUpdatedAt: data.contactNotesUpdatedAt || null,
     createdAt: getTimestamp(),
   };
 }

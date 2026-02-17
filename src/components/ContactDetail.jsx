@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { NoteList } from './NoteList';
-import { NoteForm } from './NoteForm';
+import { ContactNotes } from './ContactNotes';
 import { TaskList } from './TaskList';
 import { TaskForm } from './TaskForm';
 import { AttachmentList } from './AttachmentList';
@@ -12,14 +11,10 @@ import styles from './ContactDetail.module.css';
 
 export function ContactDetail({
   contact,
-  notes,
   tasks,
   onBack,
   onEdit,
   onUpdateContact,
-  onAddNote,
-  onDeleteNote,
-  onUpdateNote,
   onAddTask,
   onToggleTask,
   onDeleteTask,
@@ -112,9 +107,8 @@ export function ContactDetail({
       </div>
 
       <div className={styles.section}>
-        <h3>Call Notes</h3>
-        <NoteForm onSave={onAddNote} projects={projects} />
-        <NoteList notes={notes} onDelete={onDeleteNote} onUpdate={onUpdateNote} projects={projects} />
+        <h3>Contact Notes</h3>
+        <ContactNotes contact={contact} onUpdate={onUpdateContact} />
       </div>
 
       <div className={styles.section}>

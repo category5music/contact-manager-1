@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSyncedStorage } from './hooks/useSyncedStorage';
-import { createContact, createNote, createTask, createProject, getFullName } from './utils/storage';
+import { createContact, createTask, createProject, getFullName } from './utils/storage';
 import { Sidebar } from './components/Sidebar';
 import { Layout } from './components/Layout';
 import { ContactList } from './components/ContactList';
@@ -9,13 +9,11 @@ import { ContactDetail } from './components/ContactDetail';
 import { Calendar } from './components/Calendar';
 import { TasksListView } from './components/TasksListView';
 import { TaskForm } from './components/TaskForm';
-import { NotesListView } from './components/NotesListView';
 
 // Main navigation: 'contacts' | 'tasks' | 'notes'
 // Contact views: 'list' | 'add' | 'edit' | 'detail'
 function App() {
   const [contacts, setContacts] = useSyncedStorage('contacts', []);
-  const [notes, setNotes] = useSyncedStorage('notes', []);
   const [tasks, setTasks] = useSyncedStorage('tasks', []);
   const [archivedTasks, setArchivedTasks] = useSyncedStorage('archivedTasks', []);
   const [theme, setTheme] = useSyncedStorage('theme', 'light');
@@ -25,7 +23,6 @@ function App() {
   const [mainView, setMainView] = useState('contacts');
   const [contactView, setContactView] = useState('list');
   const [tasksViewMode, setTasksViewMode] = useState('list'); // 'calendar' | 'list'
-  const [notesViewMode, setNotesViewMode] = useState('list'); // 'calendar' | 'list'
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,8 +53,7 @@ function App() {
 
   const handleDeleteProject = (id) => {
     setProjects(projects.filter((p) => p.id !== id));
-    // Unassign project from notes and tasks
-    setNotes(notes.map((n) => (n.projectId === id ? { ...n, projectId: null } : n)));
+    // Unassign project from tasks
     setTasks(tasks.map((t) => (t.projectId === id ? { ...t, projectId: null } : t)));
   };
 
@@ -105,9 +101,8 @@ function App() {
   };
 
   const handleDeleteContact = (id) => {
-    if (!confirm('Delete this contact and all their notes/tasks?')) return;
+    if (!confirm('Delete this contact and all their tasks?')) return;
     setContacts(contacts.filter((c) => c.id !== id));
-    setNotes(notes.filter((n) => n.contactId !== id));
     setTasks(tasks.filter((t) => t.contactId !== id));
     if (selectedContact?.id === id) {
       setSelectedContact(null);
@@ -118,22 +113,6 @@ function App() {
   const handleSelectContact = (contact) => {
     setSelectedContact(contact);
     setContactView('detail');
-  };
-
-  // Note handlers
-  const handleAddNote = (data) => {
-    const newNote = createNote(selectedContact.id, data);
-    setNotes([newNote, ...notes]);
-  };
-
-  const handleDeleteNote = (id) => {
-    setNotes(notes.filter((n) => n.id !== id));
-  };
-
-  const handleUpdateNote = (id, data) => {
-    setNotes(
-      notes.map((n) => (n.id === id ? { ...n, ...data } : n))
-    );
   };
 
   // Task handlers
@@ -196,10 +175,7 @@ function App() {
     }
   };
 
-  // Get notes/tasks for selected contact
-  const contactNotes = selectedContact
-    ? notes.filter((n) => n.contactId === selectedContact.id)
-    : [];
+  // Get tasks for selected contact
   const contactTasks = selectedContact
     ? tasks.filter((t) => t.contactId === selectedContact.id)
     : [];
@@ -240,21 +216,21 @@ function App() {
     );
   });
 
-  // Filter notes by search query
-  const filteredNotes = notes.filter((note) => {
+  // Filter contacts with notes by search query
+  const contactsWithNotes = contacts.filter((contact) => contact.contactNotes && contact.contactNotes.trim());
+  const filteredContactsWithNotes = contactsWithNotes.filter((contact) => {
     if (!noteSearchQuery) return true;
     const query = noteSearchQuery.toLowerCase();
-    const contact = contacts.find((c) => c.id === note.contactId);
-    const contactName = contact ? getFullName(contact).toLowerCase() : '';
+    const contactName = getFullName(contact).toLowerCase();
     return (
-      (note.content || '').toLowerCase().includes(query) ||
+      (contact.contactNotes || '').toLowerCase().includes(query) ||
       contactName.includes(query)
     );
   });
 
   // Render content based on main view
   const renderContent = () => {
-    // Project view - shows all notes and tasks for a specific project
+    // Project view - shows tasks for a specific project
     if (mainView === 'project' && selectedProjectId) {
       const selectedProject = projects.find((p) => p.id === selectedProjectId);
       if (!selectedProject) {
@@ -264,7 +240,6 @@ function App() {
       }
 
       const projectTasks = tasks.filter((t) => t.projectId === selectedProjectId);
-      const projectNotes = notes.filter((n) => n.projectId === selectedProjectId);
 
       return (
         <Layout
@@ -285,7 +260,7 @@ function App() {
           action={
             <button
               onClick={() => {
-                if (confirm('Delete this project? Notes and tasks will be untagged but not deleted.')) {
+                if (confirm('Delete this project? Tasks will be untagged but not deleted.')) {
                   handleDeleteProject(selectedProjectId);
                   setMainView('contacts');
                   setSelectedProjectId(null);
@@ -320,25 +295,6 @@ function App() {
                   contacts={contacts}
                   onTaskClick={handleCalendarItemClick}
                   onToggleTask={handleToggleTask}
-                  projects={projects}
-                />
-              )}
-            </div>
-
-            {/* Notes Section */}
-            <div>
-              <h3 style={{ margin: '0 0 1rem 0', color: 'var(--text-primary)' }}>
-                Notes ({projectNotes.length})
-              </h3>
-              {projectNotes.length === 0 ? (
-                <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                  No notes in this project yet.
-                </p>
-              ) : (
-                <NotesListView
-                  notes={projectNotes}
-                  contacts={contacts}
-                  onNoteClick={handleCalendarItemClick}
                   projects={projects}
                 />
               )}
@@ -526,9 +482,7 @@ function App() {
               ) : (
                 <Calendar
                   tasks={filteredTasks}
-                  notes={notes}
                   contacts={contacts}
-                  filter="tasks"
                   onItemClick={handleCalendarItemClick}
                 />
               )}
@@ -539,40 +493,25 @@ function App() {
     }
 
     if (mainView === 'notes') {
+      // Sort contacts by last updated (most recent first)
+      const sortedContactsWithNotes = [...filteredContactsWithNotes].sort((a, b) => {
+        const aDate = a.contactNotesUpdatedAt || '';
+        const bDate = b.contactNotesUpdatedAt || '';
+        return bDate.localeCompare(aDate);
+      });
+
+      const formatLastUpdated = (timestamp) => {
+        if (!timestamp) return 'Never';
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      };
+
       return (
-        <Layout
-          title="Notes"
-          action={
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={() => setNotesViewMode('list')}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: notesViewMode === 'list' ? 'var(--accent-color)' : 'var(--bg-secondary)',
-                  color: notesViewMode === 'list' ? 'white' : 'var(--text-primary)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                List
-              </button>
-              <button
-                onClick={() => setNotesViewMode('calendar')}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: notesViewMode === 'calendar' ? 'var(--accent-color)' : 'var(--bg-secondary)',
-                  color: notesViewMode === 'calendar' ? 'white' : 'var(--text-primary)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                Calendar
-              </button>
-            </div>
-          }
-        >
+        <Layout title="Contact Notes">
           <input
             type="text"
             placeholder="Search notes by content or contact name..."
@@ -589,21 +528,45 @@ function App() {
               color: 'var(--text-primary)',
             }}
           />
-          {notesViewMode === 'list' ? (
-            <NotesListView
-              notes={filteredNotes}
-              contacts={contacts}
-              onNoteClick={handleCalendarItemClick}
-              projects={projects}
-            />
+          {sortedContactsWithNotes.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+              <p>No contact notes yet. Add notes from a contact's page.</p>
+            </div>
           ) : (
-            <Calendar
-              tasks={tasks}
-              notes={filteredNotes}
-              contacts={contacts}
-              filter="notes"
-              onItemClick={handleCalendarItemClick}
-            />
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {sortedContactsWithNotes.map((contact) => (
+                <li
+                  key={contact.id}
+                  onClick={() => handleCalendarItemClick(contact.id)}
+                  style={{
+                    padding: '1rem',
+                    backgroundColor: 'var(--bg-secondary)',
+                    borderRadius: '8px',
+                    marginBottom: '0.5rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '500', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+                        {getFullName(contact)}
+                      </div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>
+                        {contact.contactNotes.length > 200
+                          ? contact.contactNotes.substring(0, 200) + '...'
+                          : contact.contactNotes}
+                      </div>
+                    </div>
+                    <div style={{ marginLeft: '1rem', textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        Updated: {formatLastUpdated(contact.contactNotesUpdatedAt)}
+                      </div>
+                      <span style={{ color: 'var(--accent-color)' }}>&rarr;</span>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </Layout>
       );
@@ -638,7 +601,6 @@ function App() {
         <Layout title="Contact">
           <ContactDetail
             contact={selectedContact}
-            notes={contactNotes}
             tasks={contactTasks}
             onBack={() => {
               setSelectedContact(null);
@@ -646,9 +608,6 @@ function App() {
             }}
             onEdit={() => setContactView('edit')}
             onUpdateContact={handleUpdateContactPartial}
-            onAddNote={handleAddNote}
-            onDeleteNote={handleDeleteNote}
-            onUpdateNote={handleUpdateNote}
             onAddTask={handleAddTask}
             onToggleTask={handleToggleTask}
             onDeleteTask={handleDeleteTask}
